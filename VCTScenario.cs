@@ -211,7 +211,7 @@ namespace VOID_CareerTracker
 				"[VCT_Master]: CurrentFunds={1}, CurrentScience={2}, CurrentReputation={3}, transctionDatabase {0}",
 				#if DEBUG
 				string.Format("\n\t{0}",
-					string.Join("\n\t", this.transctionDatabase.Select(t => t.ToString()).ToArray())),
+					string.Join("\n\t", this.transactionDatabase.Select(t => t.ToString()).ToArray())),
 				#else
 				string.Format("contains {0} Transactions", this.transactionDatabase.Count),
 				#endif
