@@ -34,7 +34,7 @@ using ToadicusTools;
 using UnityEngine;
 using VOID;
 
-namespace VOID_CareerTracker
+namespace VOID.VOID_CareerTracker
 {
 	[KSPScenario(
 		ScenarioCreationOptions.AddToNewCareerGames | ScenarioCreationOptions.AddToExistingCareerGames,

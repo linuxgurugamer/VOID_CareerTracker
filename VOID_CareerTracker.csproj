@@ -95,5 +95,6 @@
   <ItemGroup>
     <Compile Include="CurrencyTransaction.cs" />
     <Compile Include="VCTScenario.cs" />
+    <Compile Include="VOID_CareerTracker.cs" />
   </ItemGroup>
 </Project>

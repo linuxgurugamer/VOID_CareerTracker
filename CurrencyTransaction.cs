@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using ToadicusTools;
 using UnityEngine;
 
-namespace VOID_CareerTracker
+namespace VOID.VOID_CareerTracker
 {
 	public class CurrencyTransaction : IConfigNode
 	{
