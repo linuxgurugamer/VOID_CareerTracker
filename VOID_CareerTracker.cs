@@ -6,12 +6,15 @@
 using KSP;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using ToadicusTools;
 using UnityEngine;
 
 namespace VOID.VOID_CareerTracker
 {
 	[VOID_Scenes(GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.EDITOR)]
+	[VOID_GameModes(Game.Modes.CAREER)]
 	public class VOID_CareerTracker : VOID_WindowModule
 	{
 		private static VCTScenario Tracker
@@ -26,17 +29,18 @@ namespace VOID.VOID_CareerTracker
 
 		private Table.Column<string> timeStampCol;
 		private Table.Column<string> reasonCol;
-		private Table.Column<float> fundsDeltaCol;
+		private Table.Column<string> fundsDeltaCol;
 		private Table.Column<double> fundsTotalCol;
-		private Table.Column<float> scienceDeltaCol;
+		private Table.Column<string> scienceDeltaCol;
 		private Table.Column<float> scienceTotalCol;
-		private Table.Column<float> repDeltaCol;
+		private Table.Column<string> repDeltaCol;
 		private Table.Column<float> repTotalCol;
 
 		private Vector2 scrollViewPos;
 		private float scrollWidth;
 
 		private bool clearTable;
+		private short waitToResize;
 
 		[AVOID_SaveValue("IncludeFunds")]
 		private VOID_SaveValue<bool> includeFunds;
@@ -47,6 +51,17 @@ namespace VOID.VOID_CareerTracker
 		[AVOID_SaveValue("IncludeReputation")]
 		private VOID_SaveValue<bool> includeReputation;
 
+		protected override bool timeToUpdate
+		{
+			get
+			{
+				return (
+					(this.core.updateTimer - this.lastUpdate) > (this.core.updatePeriod * 2d) ||
+					(this.lastUpdate > this.core.updateTimer)
+				);
+			}
+		}
+
 		public bool IncludeFunds
 		{
 			get
@@ -55,7 +70,7 @@ namespace VOID.VOID_CareerTracker
 			}
 			private set
 			{
-				if (value != this.includeFunds)
+				if (value != this.includeFunds && this.timeToUpdate)
 				{
 					this.clearTable = true;
 					this.includeFunds.value = value;
@@ -71,7 +86,7 @@ namespace VOID.VOID_CareerTracker
 			}
 			private set
 			{
-				if (value != this.includeScience)
+				if (value != this.includeScience && this.timeToUpdate)
 				{
 					this.clearTable = true;
 					this.includeScience.value = value;
@@ -87,7 +102,7 @@ namespace VOID.VOID_CareerTracker
 			}
 			private set
 			{
-				if (value != this.includeReputation)
+				if (value != this.includeReputation && this.timeToUpdate)
 				{
 					this.clearTable = true;
 					this.includeReputation.value = value;
@@ -99,7 +114,7 @@ namespace VOID.VOID_CareerTracker
 		{
 			this.Name = "Transaction Log";
 
-			this.defHeight = 250f;
+			this.defHeight = 320f;
 
 			this.ledgerTable = new Table();
 
@@ -109,54 +124,45 @@ namespace VOID.VOID_CareerTracker
 			this.reasonCol = new Table.Column<string>("Reason", 20f);
 			this.ledgerTable.Add(this.reasonCol);
 
-			this.fundsDeltaCol = new Table.Column<float>("ΔFunds", 20f);
-			this.fundsDeltaCol.Format = "#,##0.00";
+			this.fundsDeltaCol = new Table.Column<string>("ΔFunds", 20f);
 			this.ledgerTable.Add(this.fundsDeltaCol);
 
 			this.fundsTotalCol = new Table.Column<double>("Funds", 20f);
 			this.fundsTotalCol.Format = "#,##0.00";
 			this.ledgerTable.Add(this.fundsTotalCol);
 
-			this.scienceDeltaCol = new Table.Column<float>("ΔScience", 20f);
-			this.scienceDeltaCol.Format = "#,##0";
+			this.scienceDeltaCol = new Table.Column<string>("ΔScience", 20f);
 			this.ledgerTable.Add(this.scienceDeltaCol);
 
 			this.scienceTotalCol = new Table.Column<float>("Science", 20f);
 			this.scienceTotalCol.Format = "#,##0";
 			this.ledgerTable.Add(this.scienceTotalCol);
 
-			this.repDeltaCol = new Table.Column<float>("ΔReputation", 20f);
-			this.repDeltaCol.Format = "#,##0";
+			this.repDeltaCol = new Table.Column<string>("ΔReputation", 20f);
 			this.ledgerTable.Add(this.repDeltaCol);
 
 			this.repTotalCol = new Table.Column<float>("Reputation", 20f);
 			this.repTotalCol.Format = "#,##0";
 			this.ledgerTable.Add(this.repTotalCol);
 
-			this.ledgerTable.ApplyHeaderStyle(VOID_Styles.labelCenterBold);
-			this.ledgerTable.ApplyCellStyle(VOID_Styles.labelRight);
-
-			this.timeStampCol.CellStyle = VOID_Styles.labelCenter;
-			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
-
 			this.scrollViewPos = Vector2.zero;
 			this.scrollWidth = 0f;
 
 			this.clearTable = true;
+			this.waitToResize = 5;
 
 			this.includeFunds = true;
 			this.includeScience = true;
 			this.includeReputation = true;
+
+			this.core.onSkinChanged += (object sender) => {this.clearTable = true;};
 		}
 
 		public override void ModuleWindow(int _)
 		{
-			if (
-				(this.core.updateTimer - this.lastUpdate) > this.core.updatePeriod ||
-				this.lastUpdate > this.core.updateTimer
-			)
+			if (this.timeToUpdate)
 			{
-				if (this.clearTable && !Input.GetMouseButton(0))
+				if (this.clearTable)
 				{
 					this.ledgerTable.ClearTable();
 
@@ -182,15 +188,17 @@ namespace VOID.VOID_CareerTracker
 					}
 
 					this.clearTable = false;
+
+					this.waitToResize = 5;
 				}
 				else
 				{
 					this.ledgerTable.ClearColumns();
 				}
 
-				double aggregateFunds = 0d;
-				float aggregateScience = 0f;
-				float aggregateReputation = 0f;
+				double aggregateFunds = Tracker.CurrentFunds;
+				float aggregateScience = Tracker.CurrentScience;
+				float aggregateReputation = Tracker.CurrentReputation;
 
 				for (int i = Tracker.TransactionList.Count - 1; i >= 0; i--)
 				{
@@ -198,17 +206,17 @@ namespace VOID.VOID_CareerTracker
 
 					bool skipTrans = true;
 
-					if (this.IncludeFunds && trans.FundsDelta > 0f)
+					if (this.IncludeFunds && trans.FundsDelta != 0f)
 					{
 						skipTrans = false;
 					}
 
-					if (this.IncludeScience && trans.ScienceDelta > 0f)
+					if (this.IncludeScience && trans.ScienceDelta != 0f)
 					{
 						skipTrans = false;
 					}
 
-					if (this.IncludeReputation && trans.ReputationDelta > 0f)
+					if (this.IncludeReputation && trans.ReputationDelta != 0f)
 					{
 						skipTrans = false;
 					}
@@ -222,19 +230,25 @@ namespace VOID.VOID_CareerTracker
 
 					this.reasonCol.Add(Enum.GetName(typeof(TransactionReasons), trans.Reason));
 
-					this.fundsDeltaCol.Add(trans.FundsDelta);
-					aggregateFunds += (double)trans.FundsDelta;
+					this.fundsDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.FundsDelta, "#,##0.00"));
 					this.fundsTotalCol.Add(aggregateFunds);
+					aggregateFunds -= (double)trans.FundsDelta;
 
-					this.scienceDeltaCol.Add(trans.ScienceDelta);
-					aggregateScience += trans.ScienceDelta;
+					this.scienceDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ScienceDelta, "#,##0"));
 					this.scienceTotalCol.Add(aggregateScience);
+					aggregateScience -= trans.ScienceDelta;
 
-					this.repDeltaCol.Add(trans.ReputationDelta);
-					aggregateReputation += trans.ReputationDelta;
+					this.repDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ReputationDelta, "#,##0"));
 					this.repTotalCol.Add(aggregateReputation);
+					aggregateReputation -= trans.ReputationDelta;
 				}
 			}
+
+			this.ledgerTable.ApplyHeaderStyle(VOID_Styles.labelCenterBold);
+			this.ledgerTable.ApplyCellStyle(VOID_Styles.labelRight);
+
+			this.timeStampCol.CellStyle = VOID_Styles.labelCenter;
+			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
 
 			GUIStyle vertStyle = new GUIStyle(GUIStyle.none);
 			RectOffset padding = GUI.skin.scrollView.padding;
@@ -243,7 +257,7 @@ namespace VOID.VOID_CareerTracker
 
 			GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
 
-			this.IncludeFunds = GUILayout.Toggle(
+			this.IncludeFunds  = GUILayout.Toggle(
 				this.IncludeFunds,
 				"Funds",
 				GUI.skin.button,
@@ -273,14 +287,10 @@ namespace VOID.VOID_CareerTracker
 			vertStyle.padding = GUI.skin.scrollView.padding;
 			vertStyle.contentOffset = GUI.skin.scrollView.contentOffset;
 
-			GUILayout.BeginVertical(vertStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
-
-			this.ledgerTable.RenderHeader();
-
-			GUILayout.EndVertical();
-
 			if (this.IncludeFunds | this.IncludeScience | this.IncludeReputation)
 			{
+				this.ledgerTable.RenderHeader(true);
+
 				GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 
 				this.scrollViewPos = GUILayout.BeginScrollView(
@@ -289,14 +299,23 @@ namespace VOID.VOID_CareerTracker
 					true,
 					GUIStyle.none,
 					GUI.skin.verticalScrollbar,
-					GUILayout.MinWidth(this.scrollWidth + 60f),
+					GUILayout.MinWidth(this.scrollWidth),
+					GUILayout.ExpandWidth(true),
 					GUILayout.ExpandHeight(true)
 				);
 
 				this.ledgerTable.Render(false);
 
-				this.scrollWidth = this.ledgerTable.Width;
-				this.defWidth = this.ledgerTable.Width;
+				if (this.waitToResize >= 0)
+				{
+					if (this.waitToResize == 0)
+					{
+						this.scrollWidth = this.ledgerTable.Width + 60f;
+						this.defWidth = this.ledgerTable.Width;
+					}
+
+					this.waitToResize--;
+				}
 
 				GUILayout.EndScrollView();
 
@@ -308,6 +327,55 @@ namespace VOID.VOID_CareerTracker
 			}
 
 			GUI.DragWindow();
+		}
+
+		public override void DrawConfigurables()
+		{
+			if (GUILayout.Button("Write Transaction Database to CSV"))
+			{
+				string baseName = string.Format(
+					"{0}-{1}.csv",
+					HighLogic.CurrentGame.Title,
+					(int)Planetarium.GetUniversalTime()
+				);
+
+				var file = KSP.IO.File.Create<VOID_CareerTracker>(baseName, null);
+
+				UTF8Encoding enc = new UTF8Encoding(true);
+
+				byte[] lineBytes = enc.GetPreamble();
+
+				file.Write(lineBytes, 0, lineBytes.Length);
+
+				string transLine = string.Format(
+					"{0}, {1}, \"{2}\", \"{3}\", \"{4}\"\n",
+					"TimeStamp",
+					"Reason",
+					"Funds Delta",
+					"Science Delta",
+					"Reputation Delta"
+				);
+
+				lineBytes = enc.GetBytes(transLine);
+
+				file.Write(lineBytes, 0, lineBytes.Length);
+
+				foreach (CurrencyTransaction trans in Tracker.TransactionList)
+				{
+					transLine = string.Format(
+						"{0}, \"{1}\", {2}, {3}, {4}\n",
+						trans.TimeStamp.ToString("F2"),
+						Enum.GetName(typeof(TransactionReasons), trans.Reason),
+						trans.FundsDelta.ToString("F2"),
+						trans.ScienceDelta.ToString("F2"),
+						trans.ReputationDelta.ToString("F2")
+					);
+
+					lineBytes = enc.GetBytes(transLine);
+
+					file.Write(lineBytes, 0, lineBytes.Length);
+				}
+			}
 		}
 	}
 }
