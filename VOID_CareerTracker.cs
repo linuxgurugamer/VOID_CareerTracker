@@ -62,6 +62,16 @@ namespace VOID.VOID_CareerTracker
 			}
 		}
 
+		protected override Action<int> DecoratedWindow
+		{
+			get
+			{
+				VOID_WindowModule.UncacheWindow(this.ModuleWindow);
+
+				return base.DecoratedWindow;
+			}
+		}
+
 		public bool IncludeFunds
 		{
 			get
@@ -148,14 +158,28 @@ namespace VOID.VOID_CareerTracker
 			this.scrollViewPos = Vector2.zero;
 			this.scrollWidth = 0f;
 
-			this.clearTable = true;
 			this.waitToResize = 5;
 
 			this.includeFunds = true;
 			this.includeScience = true;
 			this.includeReputation = true;
 
-			this.core.onSkinChanged += (object sender) => {this.clearTable = true;};
+			this.core.onSkinChanged += this.onSkinChangedHandler;
+
+			this.onSkinChangedHandler(null);
+		}
+
+		private void onSkinChangedHandler(object sender)
+		{
+			this.clearTable = true;
+
+			this.ledgerTable.ApplyHeaderStyle(VOID_Styles.labelCenterBold);
+			this.ledgerTable.ApplyCellStyle(VOID_Styles.labelRight);
+
+			this.timeStampCol.CellStyle = VOID_Styles.labelCenter;
+			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
+
+			VOID_WindowModule.UncacheWindow(this.ModuleWindow);
 		}
 
 		public override void ModuleWindow(int _)
@@ -244,16 +268,9 @@ namespace VOID.VOID_CareerTracker
 				}
 			}
 
-			this.ledgerTable.ApplyHeaderStyle(VOID_Styles.labelCenterBold);
-			this.ledgerTable.ApplyCellStyle(VOID_Styles.labelRight);
-
-			this.timeStampCol.CellStyle = VOID_Styles.labelCenter;
-			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
-
-			GUIStyle vertStyle = new GUIStyle(GUIStyle.none);
 			RectOffset padding = GUI.skin.scrollView.padding;
 
-			GUILayout.BeginVertical(vertStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
+			GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
 
 			GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
 
@@ -283,9 +300,6 @@ namespace VOID.VOID_CareerTracker
 			GUILayout.EndVertical();
 
 			padding.bottom = padding.top = 0;
-
-			vertStyle.padding = GUI.skin.scrollView.padding;
-			vertStyle.contentOffset = GUI.skin.scrollView.contentOffset;
 
 			if (this.IncludeFunds | this.IncludeScience | this.IncludeReputation)
 			{
