@@ -66,9 +66,12 @@ namespace VOID.VOID_CareerTracker
 		{
 			get
 			{
-				VOID_WindowModule.UncacheWindow(this.ModuleWindow);
-
-				return base.DecoratedWindow;
+				return VOID_WindowModule.DecorateWindow(
+					this.ModuleWindow,
+					this.WindowPos,
+					(bool active) => { this.toggleActive = active; },
+					false
+				);
 			}
 		}
 
@@ -178,8 +181,6 @@ namespace VOID.VOID_CareerTracker
 
 			this.timeStampCol.CellStyle = VOID_Styles.labelCenter;
 			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
-
-			VOID_WindowModule.UncacheWindow(this.ModuleWindow);
 		}
 
 		public override void ModuleWindow(int _)
