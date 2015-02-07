@@ -25,6 +25,9 @@ namespace VOID.VOID_CareerTracker
 			}
 		}
 
+		private int trackerCount;
+		private bool trackerChanged;
+
 		private Table ledgerTable;
 
 		private Table.Column<string> timeStampCol;
@@ -56,21 +59,8 @@ namespace VOID.VOID_CareerTracker
 			get
 			{
 				return (
-					(this.core.updateTimer - this.lastUpdate) > (this.core.updatePeriod * 2d) ||
-					(this.lastUpdate > this.core.updateTimer)
-				);
-			}
-		}
-
-		protected override Action<int> DecoratedWindow
-		{
-			get
-			{
-				return VOID_WindowModule.DecorateWindow(
-					this.ModuleWindow,
-					this.WindowPos,
-					(bool active) => { this.toggleActive = active; },
-					false
+				    (this.core.UpdateTimer - this.lastUpdate) > (this.core.UpdatePeriod * 2d) ||
+				    (this.lastUpdate > this.core.UpdateTimer)
 				);
 			}
 		}
@@ -163,9 +153,9 @@ namespace VOID.VOID_CareerTracker
 
 			this.waitToResize = 5;
 
-			this.includeFunds = true;
-			this.includeScience = true;
-			this.includeReputation = true;
+			this.includeFunds = (VOID_SaveValue<bool>)true;
+			this.includeScience = (VOID_SaveValue<bool>)true;
+			this.includeReputation = (VOID_SaveValue<bool>)true;
 
 			this.core.onSkinChanged += this.onSkinChangedHandler;
 
@@ -183,10 +173,19 @@ namespace VOID.VOID_CareerTracker
 			this.reasonCol.CellStyle = VOID_Styles.labelCenter;
 		}
 
-		public override void ModuleWindow(int _)
+		public override void ModuleWindow(int id)
 		{
 			if (this.timeToUpdate)
 			{
+				int currentTrackerCount = Tracker.TransactionList.Count;
+
+				this.trackerChanged = (this.trackerCount != currentTrackerCount);
+
+				if (trackerChanged)
+				{
+					this.trackerCount = currentTrackerCount;
+				}
+
 				if (this.clearTable)
 				{
 					this.ledgerTable.ClearTable();
@@ -215,57 +214,16 @@ namespace VOID.VOID_CareerTracker
 					this.clearTable = false;
 
 					this.waitToResize = 5;
+
+					this.updateTable();
 				}
-				else
+				else if (trackerChanged)
 				{
 					this.ledgerTable.ClearColumns();
-				}
 
-				double aggregateFunds = Tracker.CurrentFunds;
-				float aggregateScience = Tracker.CurrentScience;
-				float aggregateReputation = Tracker.CurrentReputation;
+					this.waitToResize = 5;
 
-				for (int i = Tracker.TransactionList.Count - 1; i >= 0; i--)
-				{
-					CurrencyTransaction trans = Tracker.TransactionList[i];
-
-					bool skipTrans = true;
-
-					if (this.IncludeFunds && trans.FundsDelta != 0f)
-					{
-						skipTrans = false;
-					}
-
-					if (this.IncludeScience && trans.ScienceDelta != 0f)
-					{
-						skipTrans = false;
-					}
-
-					if (this.IncludeReputation && trans.ReputationDelta != 0f)
-					{
-						skipTrans = false;
-					}
-
-					if (skipTrans)
-					{
-						continue;
-					}
-
-					this.timeStampCol.Add(VOID_Tools.FormatDate(trans.TimeStamp));
-
-					this.reasonCol.Add(Enum.GetName(typeof(TransactionReasons), trans.Reason));
-
-					this.fundsDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.FundsDelta, "#,##0.00"));
-					this.fundsTotalCol.Add(aggregateFunds);
-					aggregateFunds -= (double)trans.FundsDelta;
-
-					this.scienceDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ScienceDelta, "#,##0"));
-					this.scienceTotalCol.Add(aggregateScience);
-					aggregateScience -= trans.ScienceDelta;
-
-					this.repDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ReputationDelta, "#,##0"));
-					this.repTotalCol.Add(aggregateReputation);
-					aggregateReputation -= trans.ReputationDelta;
+					this.updateTable();
 				}
 			}
 
@@ -275,7 +233,7 @@ namespace VOID.VOID_CareerTracker
 
 			GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
 
-			this.IncludeFunds  = GUILayout.Toggle(
+			this.IncludeFunds = GUILayout.Toggle(
 				this.IncludeFunds,
 				"Funds",
 				GUI.skin.button,
@@ -341,7 +299,7 @@ namespace VOID.VOID_CareerTracker
 				GUILayout.Label("Select a filter option to display transactions.");
 			}
 
-			GUI.DragWindow();
+			base.ModuleWindow(id);
 		}
 
 		public override void DrawConfigurables()
@@ -349,10 +307,10 @@ namespace VOID.VOID_CareerTracker
 			if (GUILayout.Button("Write Transaction Database to CSV"))
 			{
 				string baseName = string.Format(
-					"{0}-{1}.csv",
-					HighLogic.CurrentGame.Title,
-					(int)Planetarium.GetUniversalTime()
-				);
+					                  "{0}-{1}.csv",
+					                  HighLogic.CurrentGame.Title,
+					                  (int)Planetarium.GetUniversalTime()
+				                  );
 
 				var file = KSP.IO.File.Create<VOID_CareerTracker>(baseName, null);
 
@@ -363,13 +321,13 @@ namespace VOID.VOID_CareerTracker
 				file.Write(lineBytes, 0, lineBytes.Length);
 
 				string transLine = string.Format(
-					"{0}, {1}, \"{2}\", \"{3}\", \"{4}\"\n",
-					"TimeStamp",
-					"Reason",
-					"Funds Delta",
-					"Science Delta",
-					"Reputation Delta"
-				);
+					                   "{0}, {1}, \"{2}\", \"{3}\", \"{4}\"\n",
+					                   "TimeStamp",
+					                   "Reason",
+					                   "Funds Delta",
+					                   "Science Delta",
+					                   "Reputation Delta"
+				                   );
 
 				lineBytes = enc.GetBytes(transLine);
 
@@ -390,6 +348,57 @@ namespace VOID.VOID_CareerTracker
 
 					file.Write(lineBytes, 0, lineBytes.Length);
 				}
+			}
+		}
+
+		private void updateTable()
+		{
+
+			double aggregateFunds = Tracker.CurrentFunds;
+			float aggregateScience = Tracker.CurrentScience;
+			float aggregateReputation = Tracker.CurrentReputation;
+
+			for (int i = Tracker.TransactionList.Count - 1; i >= 0; i--)
+			{
+				CurrencyTransaction trans = Tracker.TransactionList[i];
+
+				bool skipTrans = true;
+
+				if (this.IncludeFunds && trans.FundsDelta != 0f)
+				{
+					skipTrans = false;
+				}
+
+				if (this.IncludeScience && trans.ScienceDelta != 0f)
+				{
+					skipTrans = false;
+				}
+
+				if (this.IncludeReputation && trans.ReputationDelta != 0f)
+				{
+					skipTrans = false;
+				}
+
+				if (skipTrans)
+				{
+					continue;
+				}
+
+				this.timeStampCol.Add(VOID_Tools.FormatDate(trans.TimeStamp));
+
+				this.reasonCol.Add(Enum.GetName(typeof(TransactionReasons), trans.Reason));
+
+				this.fundsDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.FundsDelta, "#,##0.00"));
+				this.fundsTotalCol.Add(aggregateFunds);
+				aggregateFunds -= (double)trans.FundsDelta;
+
+				this.scienceDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ScienceDelta, "#,##0"));
+				this.scienceTotalCol.Add(aggregateScience);
+				aggregateScience -= trans.ScienceDelta;
+
+				this.repDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ReputationDelta, "#,##0"));
+				this.repTotalCol.Add(aggregateReputation);
+				aggregateReputation -= trans.ReputationDelta;
 			}
 		}
 	}
