@@ -213,15 +213,11 @@ namespace VOID.VOID_CareerTracker
 
 					this.clearTable = false;
 
-					this.waitToResize = 5;
-
 					this.updateTable();
 				}
 				else if (trackerChanged)
 				{
 					this.ledgerTable.ClearColumns();
-
-					this.waitToResize = 5;
 
 					this.updateTable();
 				}
@@ -399,6 +395,8 @@ namespace VOID.VOID_CareerTracker
 				this.repDeltaCol.Add(VOID_CareerStatus.formatDelta(trans.ReputationDelta, "#,##0"));
 				this.repTotalCol.Add(aggregateReputation);
 				aggregateReputation -= trans.ReputationDelta;
+
+				this.waitToResize = 5;
 			}
 		}
 	}
