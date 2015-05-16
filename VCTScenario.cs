@@ -29,7 +29,6 @@
 using KSP;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ToadicusTools;
 using UnityEngine;
 using VOID;
@@ -149,8 +148,12 @@ namespace VOID.VOID_CareerTracker
 		{
 			base.OnLoad(node);
 
-			foreach (ConfigNode transNode in node.GetNodes(TRANSACTION_KEY))
+			ConfigNode[] transNodes = node.GetNodes(TRANSACTION_KEY);
+			ConfigNode transNode;
+			for (int idx = 0; idx < transNodes.Length; idx++)
 			{
+				transNode = transNodes[idx];
+
 				CurrencyTransaction trans = new CurrencyTransaction();
 
 				trans.Load(transNode);
@@ -184,8 +187,11 @@ namespace VOID.VOID_CareerTracker
 
 			node.ClearNodes();
 
-			foreach (CurrencyTransaction trans in this.transactionDatabase)
+			CurrencyTransaction trans;
+			for (int idx = 0; idx < this.transactionDatabase.Count; idx++)
 			{
+				trans = this.transactionDatabase[idx];
+
 				ConfigNode transNode = new ConfigNode(TRANSACTION_KEY);
 
 				trans.Save(transNode);
@@ -368,8 +374,10 @@ namespace VOID.VOID_CareerTracker
 		{
 			this.CurrentFunds = 0f;
 
-			foreach (CurrencyTransaction trans in this.transactionDatabase)
+			CurrencyTransaction trans;
+			for (int idx = 0; idx < this.transactionDatabase.Count; idx++)
 			{
+				trans = this.transactionDatabase[idx];
 				this.CurrentFunds += trans.FundsDelta;
 			}
 
@@ -377,8 +385,9 @@ namespace VOID.VOID_CareerTracker
 
 			this.CurrentScience = 0f;
 
-			foreach (CurrencyTransaction trans in this.transactionDatabase)
+			for (int idx = 0; idx < this.transactionDatabase.Count; idx++)
 			{
+				trans = this.transactionDatabase[idx];
 				this.CurrentScience += trans.ScienceDelta;
 			}
 
@@ -386,8 +395,9 @@ namespace VOID.VOID_CareerTracker
 
 			this.CurrentReputation = 0f;
 
-			foreach (CurrencyTransaction trans in this.transactionDatabase)
+			for (int idx = 0; idx < this.transactionDatabase.Count; idx++)
 			{
+				trans = this.transactionDatabase[idx];
 				this.CurrentReputation += trans.ReputationDelta;
 			}
 

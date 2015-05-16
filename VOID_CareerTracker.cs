@@ -329,8 +329,11 @@ namespace VOID.VOID_CareerTracker
 
 				file.Write(lineBytes, 0, lineBytes.Length);
 
-				foreach (CurrencyTransaction trans in Tracker.TransactionList)
+				CurrencyTransaction trans;
+				for (int idx = 0; idx < Tracker.TransactionList.Count; idx++)
 				{
+					trans = Tracker.TransactionList[idx];
+
 					transLine = string.Format(
 						"{0}, \"{1}\", {2}, {3}, {4}\n",
 						trans.TimeStamp.ToString("F2"),
