@@ -68,8 +68,16 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="CurrencyTransaction.cs" />
+    <Compile Include="VCTScenario.cs" />
+    <Compile Include="VOID_CareerTracker.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\_KSPAssemblies\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="KSPUtil">
+      <HintPath>..\_KSPAssemblies\KSPUtil.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <HintPath>..\_KSPAssemblies\System.dll</HintPath>
@@ -77,24 +85,14 @@
     <Reference Include="UnityEngine">
       <HintPath>..\_KSPAssemblies\UnityEngine.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ToadicusTools\ToadicusTools.csproj">
-      <Project>{D48A5542-6655-4149-BC27-B27DF0466F1C}</Project>
-      <Name>ToadicusTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VesselSimulator\VesselSimulator.csproj">
-      <Project>{30FD6C0B-D36E-462F-B0FF-F0FAC9C666CF}</Project>
-      <Name>VesselSimulator</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VOID\VOID.csproj">
-      <Project>{45ACC1CC-942C-4A66-BFC7-8BE375938B18}</Project>
-      <Name>VOID</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CurrencyTransaction.cs" />
-    <Compile Include="VCTScenario.cs" />
-    <Compile Include="VOID_CareerTracker.cs" />
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\_KSPAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="VOID">
+      <HintPath>..\VOID\GameData\VOID\Plugins\VOID.dll</HintPath>
+    </Reference>
+    <Reference Include="ToadicusTools">
+      <HintPath>..\ToadicusTools\GameData\ToadicusTools\ToadicusTools.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
