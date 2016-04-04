@@ -32,6 +32,9 @@ using System.Collections.Generic;
 using ToadicusTools.Extensions;
 using UnityEngine;
 using VOID;
+#if DEBUG
+using System.Linq;
+#endif
 
 namespace VOID.VOID_CareerTracker
 {
