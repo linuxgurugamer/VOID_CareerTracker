@@ -23,7 +23,10 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\" />
+        <Command>
+          <type>AfterBuild</type>
+          <command>xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\</command>
+        </Command>
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -34,7 +37,10 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\" />
+        <Command>
+          <type>AfterBuild</type>
+          <command>xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\</command>
+        </Command>
       </CustomCommands>
     </CustomCommands>
     <ConsolePause>false</ConsolePause>
@@ -50,7 +56,10 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/" />
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/</command>
+        </Command>
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -61,7 +70,10 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/" />
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/</command>
+        </Command>
       </CustomCommands>
     </CustomCommands>
     <ConsolePause>false</ConsolePause>
@@ -75,9 +87,6 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\_KSPAssemblies\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>..\_KSPAssemblies\KSPUtil.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <HintPath>..\_KSPAssemblies\System.dll</HintPath>
