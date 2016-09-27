@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug_win</Configuration>
@@ -23,10 +23,7 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command>
-          <type>AfterBuild</type>
-          <command>xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\</command>
-        </Command>
+        <Command type="AfterBuild" command="xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -37,10 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command>
-          <type>AfterBuild</type>
-          <command>xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\</command>
-        </Command>
+        <Command type="AfterBuild" command="xcopy /Y ${TargetFile} ${ProjectDir}\GameData\VOID\Plugins\" />
       </CustomCommands>
     </CustomCommands>
     <ConsolePause>false</ConsolePause>
@@ -56,10 +50,7 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command>
-          <type>AfterBuild</type>
-          <command>cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/</command>
-        </Command>
+        <Command type="AfterBuild" command="cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -70,10 +61,7 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command>
-          <type>AfterBuild</type>
-          <command>cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/</command>
-        </Command>
+        <Command type="AfterBuild" command="cp -afv ${TargetFile} ${ProjectDir}/GameData/VOID/Plugins/" />
       </CustomCommands>
     </CustomCommands>
     <ConsolePause>false</ConsolePause>
@@ -88,9 +76,10 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>..\_KSPAssemblies\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="System">
-      <HintPath>..\_KSPAssemblies\System.dll</HintPath>
+    <Reference Include="KSPUtil">
+      <HintPath>..\_KSPAssemblies\KSPUtil.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\_KSPAssemblies\UnityEngine.dll</HintPath>
     </Reference>
@@ -104,4 +93,7 @@
       <HintPath>..\ToadicusTools\GameData\ToadicusTools\ToadicusTools.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y $(TargetPath) $(SolutionDir)VOID\GameData\VOID\Plugins\</PostBuildEvent>
+  </PropertyGroup>
 </Project>
