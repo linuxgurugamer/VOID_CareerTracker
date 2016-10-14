@@ -98,9 +98,12 @@
     <Reference Include="VOID">
       <HintPath>..\VOID\GameData\VOID\Plugins\VOID.dll</HintPath>
     </Reference>
-    <Reference Include="ToadicusTools">
-      <HintPath>..\ToadicusTools\GameData\ToadicusTools\ToadicusTools.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ToadicusTools\ToadicusTools.csproj">
+      <Project>{d48a5542-6655-4149-bc27-b27df0466f1c}</Project>
+      <Name>ToadicusTools</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y $(TargetPath) $(SolutionDir)VOID\GameData\VOID\Plugins\</PostBuildEvent>
